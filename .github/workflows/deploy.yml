@@ -19,21 +19,27 @@ jobs:
 
       - name: Clone games repository
         run: |
-          git clone https://x-access-token:${{ secrets.GAMES_DEPLOY_TOKEN }}@github.com/rawsie-dev/games.git games-repo
+          git clone https://x-access-token:${{ secrets.GAMES_DEPLOY_TOKEN }}@github.com/rawsie-dev/games.git ../games-repo
 
       - name: Copy Snake files
         run: |
-          rm -rf games-repo/snake
-          mkdir -p games-repo/snake
-          cp -r ./* games-repo/snake/
-          cp -r ./.nojekyll games-repo/snake/ 2>/dev/null || true
+          rm -rf ../games-repo/snake
+          mkdir -p ../games-repo/snake
+
+          cp -r . ../games-repo/snake
+
+          rm -rf ../games-repo/snake/.git
+          rm -rf ../games-repo/snake/.github
 
       - name: Commit and push
-        working-directory: games-repo
+        working-directory: ../games-repo
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add snake/
-          git commit -m "Deploy Snake" || exit 0
+
+          git diff --cached --quiet && exit 0
+
+          git commit -m "Deploy Snake"
           git push
