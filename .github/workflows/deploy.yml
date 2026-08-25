@@ -1,0 +1,39 @@
+name: Deploy Snake
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Snake
+        uses: actions/checkout@v4
+
+      - name: Clone games repository
+        run: |
+          git clone https://x-access-token:${{ secrets.GAMES_DEPLOY_TOKEN }}@github.com/rawsie-dev/games.git games-repo
+
+      - name: Copy Snake files
+        run: |
+          rm -rf games-repo/snake
+          mkdir -p games-repo/snake
+          cp -r ./* games-repo/snake/
+          cp -r ./.nojekyll games-repo/snake/ 2>/dev/null || true
+
+      - name: Commit and push
+        working-directory: games-repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add snake/
+          git commit -m "Deploy Snake" || exit 0
+          git push
